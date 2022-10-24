@@ -1,0 +1,149 @@
+#!/bin/bash
+## Get information on a pictures using sightengine.com
+
+RC='\e[0m'
+B='\e[1m'
+UL='\e[4m'
+RED='\e[31m'
+YELLOW='\e[33m'
+GREEN='\e[32m'
+PINK='\e[35m'
+BLUE='\e[36m'
+GREY='\e[37m'
+
+## TODO:
+## - zenity select img if no path supplied
+
+REQ='curl'
+if ! which ${REQ}>/dev/null;then
+    echo -e "To run me, you need: ${RED}"
+    exit 1
+fi
+
+if [[ ! ${1} ]];then
+    echo 'Submit a picture path!'
+    exit 1
+fi
+
+INPUT=${1}
+SE_URL='https://api.sightengine.com/1.0/check.json'
+API_USER='321660792'
+API_SECRET='bU5fWb8eFSCdbhNtzaZw'
+
+getInfo()
+{
+    curl -s -X POST ${SE_URL}\
+        -F 'models=nudity-2.0,wad,properties,faces,face-attributes,gore'\
+        -F "api_user=${API_USER}"\
+        -F "api_secret=${API_SECRET}"\
+        -F "media=@${INPUT}"
+}
+
+STATUS=$(getInfo|grep "status"|tr -d ' ",([{}])'|cut -d\: -f2)
+if [[ ${STATUS} == 'failure' ]];then
+    clear
+    echo -e "\n${B}${RED} Something went wrong:${RC}${RED}\n $(getInfo|tr -d '",([{}])')"
+    exit 1
+fi
+
+echo -e "\n ${UL}${INPUT}:${RC}\n"
+
+#female(){
+#    FEMALE=$(getInfo|grep "female"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${FEMALE} -lt '50' ]];then
+#        COLOR=${BLUE}
+#        echo -e " Gender:      ♂️ ${GREY}(${FEMALE%})${RC}"
+##        echo -e " Gender:      ${COLOR}O${RC}${GREY}(${FEMALE%})${RC}"
+#    else
+#        COLOR=${PINK}
+#        echo -e " Gender:      ♀️ ${GREY}(${FEMALE%})${RC}"
+##        echo -e " Gender:      ${COLOR}T${RC}${GREY}(${FEMALE%})${RC}"
+#    fi
+#}
+#
+#minor(){
+#    MINOR=$(getInfo|grep "minor"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${MINOR} -lt '50' ]];then
+#        COLOR=${GREEN}
+#        echo -e " Minor:    ✅${GREY}(${MINOR%})${RC}"
+##        echo -e " Minor:    ${COLOR}O${RC}${GREY}(${MINOR%})${RC}"
+#    else
+#        COLOR=${RED}
+#        echo -e " Minor:    ❌${GREY}(${MINOR%})${RC}"
+##        echo -e " Minor:    ${COLOR}X${RC}${GREY}(${MINOR%})${RC}"
+#    fi
+#}
+#
+#nudity(){
+#    NUDITY=$(getInfo|grep "none"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${NUDITY} -lt '50' ]];then
+#        COLOR=${GREEN}
+#        echo -e " Nudity:   ✅${GREY}(${NUDITY%})${RC}"
+##        echo -e " Nudity:   ${COLOR}V${RC}${GREY}(${NUDITY%})${RC}"
+#    else
+#        COLOR=${RED}
+#        echo -e " Nudity:   ❌${GREY}(${NUDITY%})${RC}"
+##        echo -e " Nudity:   ${COLOR}X${RC}${GREY}(${NUDITY%})${RC}"
+#    fi
+#}
+#
+#gore(){
+#    GORE=$(getInfo|grep "prob"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${GORE} -gt '50' ]];then
+#        COLOR=${GREEN}
+#        echo -e " Gore:     ✅${GREY}(${GORE%})${RC}"
+##        echo -e " Gore:     ${COLOR}V${RC}${GREY}(${GORE%})${RC}"
+#    else
+#        COLOR=${RED}
+#        echo -e " Gore:     ❌${GREY}(${GORE%})${RC}"
+##        echo -e " Gore:     ${COLOR}X${RC}${GREY}(${GORE%})${RC}"
+#    fi
+#}
+#
+#drugs(){
+#    DRUGS=$(getInfo|grep "drugs"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${DRUGS} -lt '50' ]];then
+#        COLOR=${GREEN}
+#        echo -e " Drugs:    ✅${GREY}(${DRUGS%})${RC}"
+##        echo -e " Drugs:    ${COLOR}V${RC}${GREY}(${DRUGS%})${RC}"
+#    else
+#        COLOR=${RED}
+#        echo -e " Drugs:    ❌${GREY}(${DRUGS%})${RC}"
+##        echo -e " Drugs:    ${COLOR}X${RC}${GREY}(${DRUGS%})${RC}"
+#    fi
+#}
+#
+#alcohol(){
+#    ALCOHOL=$(getInfo|grep "alcohol"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${ALCOHOL} -lt '50' ]];then
+#        COLOR=${GREEN}
+#        echo -e " Alcohol:  ✅${GREY}(${ALCOHOL%})${RC}"
+##        echo -e " Alcohol:  ${COLOR}V${RC}${GREY}(${ALCOHOL%})${RC}"
+#    else
+#        COLOR=${RED}
+#        echo -e " Alcohol:  ❌${GREY}(${ALCOHOL%})${RC}"
+##        echo -e " Alcohol:  ${COLOR}X${RC}${GREY}(${ALCOHOL%})${RC}"
+#    fi
+#}
+#
+#weapon(){
+#    WEAPON=$(getInfo|grep "weapon"|tr -d ' ",([{}])'|cut -d\: -f2|cut -d\. -f2)
+#    if [[ ${WEAPON} -gt '50' ]];then
+#        COLOR=${GREEN}
+#        echo -e " Weapon:   ✅${GREY}(${WEAPON%})${RC}"
+##        echo -e " Weapon:   ${COLOR}V${RC}${GREY}(${WEAPON%})${RC}"
+#    else
+#        COLOR=${RED}
+#        echo -e " Weapon:   ❌${GREY}(${WEAPON%})${RC}"
+##        echo -e " Weapon:   ${COLOR}X${RC}${GREY}(${WEAPON%})${RC}"
+#    fi
+#}
+#
+#female
+#minor
+#nudity
+#gore
+#drugs
+#alcohol
+#weapon
+getInfo

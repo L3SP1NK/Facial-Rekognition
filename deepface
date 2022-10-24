@@ -1,0 +1,10 @@
+#!/bin/python3
+from deepface import DeepFace
+
+## Analyze img
+#obj = DeepFace.analyze(img_path = "/path/to/img",
+#        actions = ['age', 'gender', 'race', 'emotion']
+#)
+
+## Analyze webcam stream
+DeepFace.stream(db_path = "/tmp")

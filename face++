@@ -1,0 +1,137 @@
+#!/bin/bash
+
+RC='\e[0m'
+B='\e[1m'
+UL='\e[4m'
+RED='\e[31m'
+YELLOW='\e[33m'
+GREEN='\e[32m'
+PINK='\e[35m'
+BLUE='\e[36m'
+GREY='\e[37m'
+
+API_KEY='_AN3Q7Iyts5RE-UWmN3CZmJNMZfuJ9wT'
+API_SECRET='yPF3NIZKxo3JqMKC3bUtuCpst2d9ce3S'
+API_URL='https://api-us.faceplusplus.com/facepp/v3/'
+
+## TODO:
+## - zenity select img if no path supplied
+## - display the number of face detected
+
+REQ='curl'
+if ! which ${REQ}>/dev/null;then
+    echo -e "${RED}To run me, you need: ${REQ}${RC}"
+    exit 1
+fi
+
+if [[ ! ${1} ]];then
+    echo -e "${RED}Submit a picture path!${RC}"
+    exit 1
+fi
+
+INPUT=${1}
+detectFace()
+{
+    ## For more info on the detect API see:
+    ## https://console.faceplusplus.com/documents/5679127
+
+    API_ENDPOINT="https://api-us.faceplusplus.com/facepp/v3/detect"
+
+    curl -s -X POST "${API_ENDPOINT}"\
+        -F "api_key=${API_KEY}"\
+        -F "api_secret=${API_SECRET}"\
+        -F "return_landmark=0"\
+        -F "return_attributes=gender,age,smiling,headpose,facequality,blur,eyestatus,emotion,beauty,mouthstatus,eyegaze,skinstatus"\
+        -F "image_file=@${INPUT}"
+}
+
+FACE_TOKEN=$(detectFace|jq|grep 'face_token'|tr -d ' ,"'|cut -d ":" -f2|paste -s -d,)
+#if [[ ! ${FACE_TOKEN} || ${FACE_TOKEN} == '' ]];then
+#    echo -e "${RED}No face detected!${RC}"
+#    exit 1
+#fi
+#
+echo $FACE_TOKEN
+analyzeFace(){
+    curl -s -X POST "https://api-us.faceplusplus.com/facepp/v3/face/analyze"\
+        -F "api_key=${API_KEY}"\
+        -F "api_secret=${API_SECRET}"\
+        -F "return_landmark=0"\
+        -F "return_attributes=gender,age,smiling,headpose,facequality,blur,eyestatus,emotion,beauty,mouthstatus,eyegaze,skinstatus"\
+        -F "image_file=@${INPUT}"\
+        -F "face_tokens=${FACE_TOKEN}"
+}
+analyzeFace
+
+## [BREAKPOINT]
+
+emotion(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "emotion:" -A7
+}
+
+beauty(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "beauty:" -A2
+}
+
+gender(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "gender:" -A1
+}
+
+age(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "age:" -A1
+}
+
+mouth(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "mouthstatus:" -A4
+}
+
+glass(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "glass:" -A1
+}
+
+skin(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "skinstatus:" -A4
+}
+
+smile(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "smile:" -A2
+}
+
+eye(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "eyestatus:" -A7
+}
+
+quality(){
+    analyzeFace\
+    |jq\
+    |tr -d ' ",([{}])'|grep "facequality:" -A2
+}
+
+emotion
+beauty
+gender
+age
+mouth
+glass
+skin
+smile
+eye
+quality
