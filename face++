@@ -45,13 +45,13 @@ detectFace()
         -F "image_file=@${INPUT}"
 }
 
-FACE_TOKEN=$(detectFace|jq|grep 'face_token'|tr -d ' ,"'|cut -d ":" -f2|paste -s -d,)
+FACE_TOKEN="$(detectFace|jq|grep 'face_token'|tr -d ' ,"'|cut -d ":" -f2|paste -s -d,)"
 #if [[ ! ${FACE_TOKEN} || ${FACE_TOKEN} == '' ]];then
 #    echo -e "${RED}No face detected!${RC}"
 #    exit 1
 #fi
 #
-echo $FACE_TOKEN
+echo ${FACE_TOKEN}
 analyzeFace(){
     curl -s -X POST "https://api-us.faceplusplus.com/facepp/v3/face/analyze"\
         -F "api_key=${API_KEY}"\
